@@ -11,7 +11,11 @@ int main(int argc, char **argv)
     // inicialización variables
     struct sockaddr_in ipportEm, ipportRec;
     socklen_t tam = sizeof(struct sockaddr_in);
+<<<<<<< HEAD
     char mensaje[50] = "Saludo! Hola bo día que tal.";
+=======
+    char mensaje[50] = "Saludo! ABCDEFGHIJKLMNOP";
+>>>>>>> origin/main
     ssize_t bytes;
 
     if (argc < 4)
@@ -59,8 +63,7 @@ int main(int argc, char **argv)
     }
 
     // Recibe conexiones indefinidamente
-    while (1)
-    {
+
         bytes = sendto(sockserv, mensaje, sizeof(mensaje), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
         if (bytes < 0)
         {
@@ -69,7 +72,7 @@ int main(int argc, char **argv)
 
         printf("Bytes enviados: %zd\n", bytes);
         sleep(1);
-    }
+    
 
     close(sockserv);
 }
