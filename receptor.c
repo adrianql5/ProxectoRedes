@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
     struct sockaddr_in direccionEmisor;             // Estructura de la dirección del emisor
     socklen_t tamanoEmisor = sizeof(direccionEmisor);
 
-    char bufferMensaje[500];                        // Buffer para almacenar el mensaje recibido
+    char bufferMensaje[10];                        // Buffer para almacenar el mensaje recibido
 
     // Crear el socket UDP
     sockReceptor = socket(AF_INET, SOCK_DGRAM, 0);
@@ -55,7 +55,7 @@ int main(int argc, char const *argv[])
 
         // Imprimir la IP, puerto y el mensaje recibido
         printf("Mensaje recibido de %s:%d\n", inet_ntoa(direccionEmisor.sin_addr), ntohs(direccionEmisor.sin_port));
-        printf("Contenido: %s\n", bufferMensaje);
+        printf("Contenido: %s (%d bytes)\n", bufferMensaje, bytesRecibidos);
     }
 
     close(sockReceptor);
