@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
     struct sockaddr_in direccionEmisor;   // Estructura de la dirección del emisor
     socklen_t tamanoEmisor = sizeof(direccionEmisor);
 
-    char bufferMensaje[10]; // Buffer para almacenar el mensaje recibido
+    char bufferMensaje[10];                        // Buffer para almacenar el mensaje recibido
 
     // Crear el socket UDP
     sockReceptor = socket(AF_INET, SOCK_DGRAM, 0);

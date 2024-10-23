@@ -11,7 +11,11 @@ int main(int argc, char **argv)
     // inicialización variables
     struct sockaddr_in ipportEm, ipportRec;
     socklen_t tam = sizeof(struct sockaddr_in);
+<<<<<<< HEAD
+    char mensaje[50] = "Saludo! Hola bo día que tal.";
+=======
 
+>>>>>>> origin/main
     ssize_t bytes;
 
     if (argc < 4)
