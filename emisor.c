@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     // inicialización variables
     struct sockaddr_in ipportEm, ipportRec;
     socklen_t tam = sizeof(struct sockaddr_in);
-    char mensaje[50] = "Saludo! ABCDEFGHIJKLMNOP";
+
     ssize_t bytes;
 
     if (argc < 4)
@@ -59,8 +59,11 @@ int main(int argc, char **argv)
     }
 
     // Recibe conexiones indefinidamente
-
-        bytes = sendto(sockserv, mensaje, sizeof(mensaje), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
+    float lista[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
+    char mensaje[50];
+    for(int i = 0; i<5; i++){
+        sprintf(mensaje, "%f", lista[i]);
+        bytes = sendto(sockserv, mensaje, sizeof(float), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
         if (bytes < 0)
         {
             perror("Error al enviar el mensaje");
@@ -68,7 +71,14 @@ int main(int argc, char **argv)
 
         printf("Bytes enviados: %zd\n", bytes);
         sleep(1);
-    
+    }
 
+        bytes = sendto(sockserv, "\n", sizeof(float), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
+        if (bytes < 0)
+        {
+            perror("Error al enviar el mensaje");
+        }
+
+        printf("Bytes enviados: %zd\n", bytes);
     close(sockserv);
 }
