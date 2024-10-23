@@ -9,86 +9,114 @@
 
 int main(int argc, char **argv)
 {
-    // Inicialización variables
-    char linea[1000];
-    int sockserv = socket(AF_INET, SOCK_STREAM, 0);
-    ssize_t bytes;
-
-    if (argc < 3)
+    // Verificación de argumentos
+    if (argc < 4)
     {
-        printf("Error en los argumentos.");
+        printf("Error en los argumentos. Uso: <IP servidor> <puerto servidor> <puerto cliente> <archivo>\n");
         exit(1);
     }
-    // Argumento 3: nombre de archivo de lectura
-    char *filename = argv[3];
+
+    // Inicialización de variables
+    char linea[1000];
+    ssize_t bytes;
+    struct sockaddr_in ipportserv, ipportcli;
+    socklen_t tam = sizeof(ipportserv);
+
+    // Crear socket UDP
+    int sockserv = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockserv < 0)
+    {
+        printf("No se pudo crear el socket UDP.\n");
+        exit(1);
+    }
+    printf("Socket UDP creado.\n");
+
+    // Argumento 1: IP del servidor
+    ipportserv.sin_family = AF_INET;
+    inet_pton(AF_INET, argv[1], &ipportserv.sin_addr.s_addr);
+
+    // Argumento 2: puerto del servidor
+    uint16_t portserv = atoi(argv[2]);
+    if (portserv < IPPORT_RESERVED)
+    {
+        printf("Error en el puerto del servidor.\n");
+        exit(1);
+    }
+    ipportserv.sin_port = htons(portserv);  // Establece el puerto del servidor
+
+    // Argumento 3: puerto del cliente
+    uint16_t portcli = atoi(argv[3]);
+    if (portcli < IPPORT_RESERVED)
+    {
+        printf("Error en el puerto del cliente.\n");
+        exit(1);
+    }
+
+    // Configurar la dirección y puerto del cliente (emisor)
+    ipportcli.sin_family = AF_INET;
+    ipportcli.sin_addr.s_addr = htonl(INADDR_ANY); // Escucha en cualquier interfaz
+    ipportcli.sin_port = htons(portcli);  // Asigna el puerto del cliente
+
+    // Asignar el puerto del cliente al socket con bind()
+    if (bind(sockserv, (struct sockaddr *)&ipportcli, sizeof(ipportcli)) < 0)
+    {
+        printf("Error al asignar el puerto del cliente.\n");
+        exit(1);
+    }
+    printf("Cliente asociado al puerto %d.\n", portcli);
+
+    // Argumento 4: nombre del archivo de lectura
+    char *filename = argv[4];
     FILE *arquivo = fopen(filename, "r");
     if (arquivo == NULL)
     {
-        printf("Error en el archivo.");
+        printf("Error al abrir el archivo.\n");
         exit(1);
     }
 
-    // El nombre del archivo de salida es el de entrada pero en mayúsculas.
+    // Crear el nombre del archivo de salida en mayúsculas
     char FILENAME[256];
     int i;
-    for ( i = 0; filename[i] != '\0'; i++)
+    for (i = 0; filename[i] != '\0'; i++)
     {
         FILENAME[i] = toupper(filename[i]);
-
     }
-    FILENAME[i+1]='\0';
+    FILENAME[i] = '\0'; // Termina la cadena
+
     FILE *arquivo2 = fopen(FILENAME, "w");
     if (arquivo2 == NULL)
     {
-        printf("Error creando el archivo de salida en mayúsculas.");
-    }
-
-    // Argumento 2: puerto
-    uint16_t port = atoi(argv[2]);
-
-    if (port < IPPORT_RESERVED)
-    {
-        printf("Error en el puerto.");
+        printf("Error creando el archivo de salida en mayúsculas.\n");
         exit(1);
     }
 
-    // Argumento 1: IP
-    struct sockaddr_in ipportserv;
-    ipportserv.sin_family = AF_INET;
-    ipportserv.sin_port = htons(port);
-    inet_pton(AF_INET, argv[1], &ipportserv.sin_addr.s_addr);
-
-    // Creaciíon de socket
-    if (sockserv < 0)
-    {
-        printf("No se pudo crear el socket");
-        exit(1);
-    }
-    printf("Socket creado.\n");
-
-    // Conexión con servidor.
-    if (connect(sockserv, (struct sockaddr *)&ipportserv, sizeof(struct sockaddr_in)) < 0)
-    {
-        printf("No se pudo conectar\n");
-        exit(1);
-    }
-    printf("Conectado.");
-
-    // Se lee todo el archivo y se envía línea por línea
+    // Leer el archivo y enviar cada línea por UDP
     while (fgets(linea, sizeof(linea), arquivo) != NULL)
     {
-        send(sockserv, linea, sizeof(linea), 0);
-        // Se guarda el mensaje (linea) y el numero de bytes recibidos (bytes)
-        bytes = recv(sockserv, linea, sizeof(linea), 0);
+        // Enviar la línea al servidor usando UDP
+        sendto(sockserv, linea, sizeof(linea), 0, (struct sockaddr *)&ipportserv, tam);
+        
+        // Recibir la respuesta del servidor
+        bytes = recvfrom(sockserv, linea, sizeof(linea), 0, (struct sockaddr *)&ipportserv, &tam);
         if (bytes > 0)
         {
-            printf("\n\nMensaje: %s  Bytes: %ld", linea, bytes);
-            fprintf(arquivo2, "%s", linea);
+            linea[bytes] = '\0';  // Asegurarse de que la cadena termine
+            printf("\n\nMensaje recibido: %s  Bytes: %zd", linea, bytes);
+            fprintf(arquivo2, "%s", linea);  // Escribir la respuesta en el archivo de salida
         }
         else
+        {
+            printf("No se recibieron más datos.\n");
             break;
+        }
     }
-    printf("\n\nFin transmisión.\n");
 
+    printf("\n\nFin de la transmisión.\n");
+
+    // Cerrar el socket y archivos
     close(sockserv);
+    fclose(arquivo);
+    fclose(arquivo2);
+
+    return 0;
 }
