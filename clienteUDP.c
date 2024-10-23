@@ -90,12 +90,17 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    sleep(2);
     // Leer el archivo y enviar cada línea por UDP
     while (fgets(linea, sizeof(linea), arquivo) != NULL)
     {
         // Enviar la línea al servidor usando UDP
-        sendto(sockserv, linea, sizeof(linea), 0, (struct sockaddr *)&ipportserv, tam);
-        
+        bytes = sendto(sockserv, linea, sizeof(linea), 0, (struct sockaddr *)&ipportserv, tam);
+        if (bytes > 0)
+        {
+            linea[bytes] = '\0';  // Asegurarse de que la cadena termine
+            printf("\n\nMensaje enviado: %s  Bytes: %zd", linea, bytes);
+        }
         // Recibir la respuesta del servidor
         bytes = recvfrom(sockserv, linea, sizeof(linea), 0, (struct sockaddr *)&ipportserv, &tam);
         if (bytes > 0)
@@ -109,6 +114,7 @@ int main(int argc, char **argv)
             printf("No se recibieron más datos.\n");
             break;
         }
+        sleep(1);
     }
 
     printf("\n\nFin de la transmisión.\n");
