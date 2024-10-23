@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     // Recibe conexiones indefinidamente
     while (1)
     {
-        bytes = sendto(sockserv, mensaje, sizeof(mensaje), 0, &ipportRec, sizeof(ipportRec));
+        bytes = sendto(sockserv, mensaje, sizeof(mensaje), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
         if (bytes < 0)
         {
             perror("Error al enviar el mensaje");
