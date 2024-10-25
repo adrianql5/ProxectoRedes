@@ -58,27 +58,13 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    // Recibe conexiones indefinidamente
-    float lista[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
-    char mensaje[50];
-    for(int i = 0; i<5; i++){
-        sprintf(mensaje, "%f", lista[i]);
-        bytes = sendto(sockserv, mensaje, sizeof(float), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
-        if (bytes < 0)
-        {
-            perror("Error al enviar el mensaje");
-        }
-
-        printf("Bytes enviados: %zd\n", bytes);
-        sleep(1);
+    bytes = sendto(sockserv, mensaje, sizeof(mensaje), 0, (struct sockaddr *)&ipportRec, sizeof(ipportRec));
+    if (bytes < 0)
+    {
+        perror("Error al enviar el mensaje");
     }
 
-        bytes = sendto(sockserv, "\n", sizeof(float), 0,(struct sockaddr*) &ipportRec, sizeof(ipportRec));
-        if (bytes < 0)
-        {
-            perror("Error al enviar el mensaje");
-        }
+    printf("Bytes enviados: %zd\n", bytes);
 
-        printf("Bytes enviados: %zd\n", bytes);
     close(sockserv);
 }
